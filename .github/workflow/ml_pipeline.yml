@@ -1,0 +1,37 @@
+name: ML Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  train-and-evaluate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install mlflow sklearn
+        
+    - name: Train model
+      run: |
+        python train.py
+        
+    - name: Validate model
+      run: |
+        MIN_ACCURACY=0.9
+        ACCURACY=$(python -c "import train_light; print(train_light.train_model())")
+        if (( $(echo "$ACCURACY < $MIN_ACCURACY" | bc -l) )); then
+          echo "Model accuracy $ACCURACY below threshold $MIN_ACCURACY"
+          exit 1
+        fi
