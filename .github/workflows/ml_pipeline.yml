@@ -25,6 +25,7 @@ jobs:
         
     - name: Train model
       run: |
+        chmod 700 entrypoint.sh
         ./entrypoint.sh
         
     - name: Validate model
