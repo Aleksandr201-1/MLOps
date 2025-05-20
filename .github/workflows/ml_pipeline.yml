@@ -25,13 +25,18 @@ jobs:
         
     - name: Train model
       run: |
-        python train.py
+        ./entrypoint.sh
         
     - name: Validate model
       run: |
         MIN_ACCURACY=0.9
-        ACCURACY=$(python -c "import train_light; print(train_light.train_model())")
+        ACCURACY=$(python -c "import train_model; print(train_model.train_model())")
         if (( $(echo "$ACCURACY < $MIN_ACCURACY" | bc -l) )); then
           echo "Model accuracy $ACCURACY below threshold $MIN_ACCURACY"
           exit 1
         fi
+
+    - name: Register model
+      if: success() && github.ref == 'refs/heads/main'
+      run: |
+        python register_model.py
